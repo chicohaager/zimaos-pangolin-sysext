@@ -1,0 +1,24 @@
+#!/bin/sh
+# Run this host as a Pangolin site from /DATA/AppData/pangolin/site.env, now and at every boot.
+#   pangolin-zima enable     check site.env, start pangolin-site.service, add the boot watchdog
+#   pangolin-zima disable    stop it and remove the boot watchdog
+#   pangolin-zima status     service state and watchdog
+set -eu
+CONF=/DATA/AppData/pangolin/site.env
+WD=/usr/libexec/pangolin/unit-watchdog.sh
+case "${1:-}" in
+enable)
+  [ "$(id -u)" -eq 0 ] || { echo "needs root: sudo pangolin-zima enable" >&2; exit 1; }
+  [ -f "$CONF" ] || { echo "missing $CONF (set the site in the Pangolin tile, see /usr/share/doc/pangolin/README)" >&2; exit 1; }
+  for k in PANGOLIN_ENDPOINT NEWT_ID NEWT_SECRET; do
+    grep -q "^$k=." "$CONF" || { echo "$CONF: $k is missing" >&2; exit 1; }
+  done
+  sh "$WD" enable pangolin-site.service
+  ;;
+disable)
+  [ "$(id -u)" -eq 0 ] || { echo "needs root: sudo pangolin-zima disable" >&2; exit 1; }
+  sh "$WD" disable pangolin-site.service
+  ;;
+status) sh "$WD" status pangolin-site.service ;;
+*) sed -n '2,5p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2 ;;
+esac

@@ -1,0 +1,18 @@
+{
+  "name": "pangolin",
+  "version": "v@VERSION@",
+  "ui": {
+    "name": "pangolin",
+    "title": { "en_us": "Pangolin", "de_de": "Pangolin" },
+    "prefetch": true,
+    "show": true,
+    "entry": "/modules/pangolin/index.html",
+    "icon": "/modules/pangolin/appicon.svg",
+    "description": "Pangolin CLI: this host as a Pangolin site without a container, plus pangolin ssh/scp/login in the terminal",
+    "formality": {
+      "type": "newtab",
+      "props": { "width": "100vh", "height": "100vh", "hasModalCard": true, "animation": "zoom-in" }
+    }
+  },
+  "services": [ { "name": "pangolin-web" } ]
+}
