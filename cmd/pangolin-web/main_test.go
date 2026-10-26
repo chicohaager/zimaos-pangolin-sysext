@@ -221,3 +221,33 @@ func TestSiteAliasesCount(t *testing.T) {
 		t.Fatalf("site.env:\n%s", got)
 	}
 }
+
+// /DATA/AppData is 0777 without the sticky bit on ZimaOS 1.8 (KB §79.11): before
+// root reads site.env there, the folder is checked (lintux-modkit appdata). The
+// tunnel unit reads site.env as EnvironmentFile, which applies to ExecStartPre as
+// well, so its check is a unit of its own that runs before it.
+func TestTheDataFolderIsCheckedBeforeRootReadsIt(t *testing.T) {
+	found := false
+	for _, d := range options().DataDirs {
+		found = found || d == confDir
+	}
+	if !found {
+		t.Errorf("tile: DataDirs %v without %s", options().DataDirs, confDir)
+	}
+	g, err := os.ReadFile("../../files/usr/lib/systemd/system/pangolin-site-guard.service")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(g), "ExecStart=/bin/sh /usr/libexec/pangolin/appdata-guard.sh /DATA/AppData/pangolin\n") || strings.Contains("\n"+string(g), "\nEnvironmentFile=") {
+		t.Errorf("pangolin-site-guard.service:\n%s", g)
+	}
+	site, err := os.ReadFile("../../files/usr/lib/systemd/system/pangolin-site.service")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Requires=pangolin-site-guard.service\n", "After=network-online.target pangolin-site-guard.service\n"} {
+		if !strings.Contains(string(site), want) {
+			t.Errorf("pangolin-site.service lacks %q", want)
+		}
+	}
+}

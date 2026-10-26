@@ -1,0 +1,12 @@
+# Checks /DATA/AppData/pangolin before pangolin-site reads site.env from it as root.
+# /DATA/AppData is writable by everyone on ZimaOS 1.8 (0777, no sticky bit): the guard sets the
+# sticky bit and refuses a folder that is not root's or a symlink (lintux-modkit appdata-guard.sh,
+# KB §79.11). A unit of its own, without the tunnel's EnvironmentFile: that one applies to
+# ExecStartPre too, so a planted site.env would set the guard's environment.
+[Unit]
+Description=Check /DATA/AppData/pangolin for the Pangolin site tunnel
+RequiresMountsFor=/DATA/AppData/pangolin
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usr/libexec/pangolin/appdata-guard.sh /DATA/AppData/pangolin

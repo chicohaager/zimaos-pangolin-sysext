@@ -43,10 +43,16 @@ func envPath() string { return filepath.Join(confDir, "site.env") }
 func main() {
 	// The tunnel keeps the old binary when zpkg replaces the module (it restarts
 	// only pangolin-web): webmod restarts it then (lintux-modkit stale).
-	webmod.Run(webmod.Options{
+	webmod.Run(options())
+}
+
+func options() webmod.Options {
+	return webmod.Options{
 		Name: "pangolin", Service: "pangolin-web", Binary: "/usr/bin/pangolin-web",
 		Route: "/pangolin", Version: version, API: api, Restart: []string{unit},
-	})
+		// 0777 without sticky bit on ZimaOS 1.8: checked before the tile reads site.env (KB §79.11)
+		DataDirs: []string{confDir},
+	}
 }
 
 func api(verify func(http.Handler) http.Handler) http.Handler {
