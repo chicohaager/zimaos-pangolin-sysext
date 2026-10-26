@@ -10,8 +10,9 @@ case "${1:-}" in
 enable)
   [ "$(id -u)" -eq 0 ] || { echo "needs root: sudo pangolin-zima enable" >&2; exit 1; }
   [ -f "$CONF" ] || { echo "missing $CONF (set the site in the Pangolin tile, see /usr/share/doc/pangolin/README)" >&2; exit 1; }
-  for k in PANGOLIN_ENDPOINT NEWT_ID NEWT_SECRET; do
-    grep -q "^$k=." "$CONF" || { echo "$CONF: $k is missing" >&2; exit 1; }
+  # NEWT_ID/NEWT_SECRET or the aliases SITE_ID/SITE_SECRET the Pangolin dashboard offers (newt reads both).
+  for k in PANGOLIN_ENDPOINT 'NEWT_ID|SITE_ID' 'NEWT_SECRET|SITE_SECRET'; do
+    grep -Eq "^($k)=." "$CONF" || { echo "$CONF: $k is missing" >&2; exit 1; }
   done
   sh "$WD" enable pangolin-site.service
   ;;
