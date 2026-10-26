@@ -41,6 +41,9 @@ var mu sync.Mutex
 func envPath() string { return filepath.Join(confDir, "site.env") }
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	restartStale(ctx)
+	cancel()
 	webmod.Run(webmod.Options{
 		Name: "pangolin", Service: "pangolin-web", Binary: "/usr/bin/pangolin-web",
 		Route: "/pangolin", Version: version, API: api,
@@ -299,4 +302,36 @@ func actionHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// Paths of the running tunnel; tests replace them.
+var (
+	mainPID = func(ctx context.Context) string {
+		out, _ := run(ctx, "systemctl", "show", "-p", "MainPID", "--value", unit)
+		return strings.TrimSpace(string(out))
+	}
+	readExe = func(pid string) (string, error) { return os.Readlink("/proc/" + pid + "/exe") }
+)
+
+// restartStale restarts a running tunnel whose binary is not the current
+// /usr/libexec/pangolin/pangolin. zpkg restarts only the services in the module
+// JSON (pangolin-web) when the module is replaced; the tunnel kept running from
+// the old image, its /proc/<pid>/exe read /libexec/pangolin/pangolin (measured
+// 1.8.0, 2026-10-26). The inode is no sign: it was 15 in both images.
+func restartStale(ctx context.Context) {
+	if a, _ := run(ctx, "systemctl", "is-active", unit); strings.TrimSpace(string(a)) != "active" {
+		return
+	}
+	pid := mainPID(ctx)
+	if pid == "" || pid == "0" {
+		return
+	}
+	exe, err := readExe(pid)
+	if err != nil || exe == cli {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "pangolin-web: %s runs %s, not %s: restarting it\n", unit, exe, cli)
+	if out, err := run(ctx, "systemctl", "restart", unit); err != nil {
+		fmt.Fprintf(os.Stderr, "pangolin-web: restart %s: %v %s\n", unit, err, out)
+	}
 }
