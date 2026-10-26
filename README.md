@@ -47,6 +47,7 @@ Two upstream commands are refused on ZimaOS, with a hint: `pangolin update` (the
 
 ```sh
 sh build.sh amd64              # downloads the CLI and its source, checks sha256 and the license; needs Go, node, ../lintux-modkit
+tools/check-reproducible.sh     # before a release: builds twice (umask 022 and 002) and fails when the bytes differ
 sudo sh tools/host-test.sh     # on the host after installing; reads only
 ```
 
