@@ -43,7 +43,10 @@ function render(d) {
     <h2 class="section-title">Log</h2>
     <pre class="log mono" id="log"></pre>
   </section>`;
-  $('#log').textContent = d.log || 'no log yet';
+  const log = $('#log');
+  log.textContent = d.log || 'no log yet';
+  log.scrollTop = log.scrollHeight; // the newest lines are at the end
+
 }
 
 async function load() {
