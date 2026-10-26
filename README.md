@@ -14,7 +14,7 @@ The [Pangolin CLI](https://github.com/fosrl/cli) as a native ZimaOS module — n
 
 Enter the **endpoint**, **site ID** and **secret** of a site (Pangolin dashboard: *Sites* → *Add Site* → type *Newt*) and **Save**, then **Turn on**: the tunnel starts, also at every boot. The tile shows the state, the server, the site ID and the last 30 log lines. The secret is written to `/DATA/AppData/pangolin/site.env` (mode 600, root only) and never shown again — the tile only says that one is stored; leave the field empty to keep it. **Forget this site** turns the tunnel off and deletes `site.env`.
 
-Other settings of `pangolin up site`, for example `DISABLE_SSH=true` or `DISABLE_CLIENTS=true`, can be added to `site.env` by hand; the tile keeps such lines when it saves.
+`site.env` may name the site `NEWT_ID`/`NEWT_SECRET` (what the tile writes) or `SITE_ID`/`SITE_SECRET` (what the Pangolin dashboard offers); newt reads both, the `NEWT_` names win. Other settings of `pangolin up site`, for example `DISABLE_SSH=true` or `DISABLE_CLIENTS=true`, can be added to `site.env` by hand; the tile keeps such lines when it saves.
 
 ## Install (on the ZimaOS host)
 

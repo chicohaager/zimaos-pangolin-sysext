@@ -185,3 +185,23 @@ func TestForgetTurnsOffFirstThenRemovesTheCredentials(t *testing.T) {
 		t.Fatal("site.env still there")
 	}
 }
+
+// The Pangolin dashboard offers SITE_ID/SITE_SECRET (pangolin-cli), newt reads them as aliases
+// of NEWT_ID/NEWT_SECRET (newtconfig.go 1.19.0): a site.env written that way counts too.
+func TestSiteAliasesCount(t *testing.T) {
+	f := setup(t)
+	_ = os.MkdirAll(confDir, 0o700)
+	_ = os.WriteFile(envPath(), []byte("PANGOLIN_ENDPOINT="+endpoint+"\nSITE_ID="+siteID+"\nSITE_SECRET="+secret+"\n"), 0o600)
+	f.log = "using " + secret + "\n"
+	w, out := call(t, "GET", "/pangolin/status", nil)
+	if out["site_id"] != siteID || out["secret_set"] != true || strings.Contains(w.Body.String(), secret) {
+		t.Fatalf("status: %s", w.Body)
+	}
+	w, _ = call(t, "POST", "/pangolin/config", map[string]string{"endpoint": endpoint, "site_id": siteID, "secret": ""})
+	if w.Code != 200 {
+		t.Fatalf("config with the stored SITE_SECRET: %d %s", w.Code, w.Body)
+	}
+	if got := envFile(t); !strings.Contains(got, "NEWT_SECRET="+secret+"\n") {
+		t.Fatalf("site.env:\n%s", got)
+	}
+}

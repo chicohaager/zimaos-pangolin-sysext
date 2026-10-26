@@ -75,6 +75,22 @@ func readEnv() ([]string, map[string]string, error) {
 	return lines, kv, nil
 }
 
+// storedSiteID and siteSecret read NEWT_ID/NEWT_SECRET, else the aliases SITE_ID/SITE_SECRET that the
+// Pangolin dashboard offers — the order newt itself uses (newtconfig.go, newt 1.19.0).
+func storedSiteID(kv map[string]string) string {
+	if v := kv["NEWT_ID"]; v != "" {
+		return v
+	}
+	return kv["SITE_ID"]
+}
+
+func siteSecret(kv map[string]string) string {
+	if v := kv["NEWT_SECRET"]; v != "" {
+		return v
+	}
+	return kv["SITE_SECRET"]
+}
+
 // Status is what the tile shows. The secret itself never leaves the host.
 type Status struct {
 	CLI       string `json:"cli"`
@@ -102,13 +118,13 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.Error = err.Error()
 	}
-	s.Endpoint, s.SiteID, s.SecretSet = kv["PANGOLIN_ENDPOINT"], kv["NEWT_ID"], kv["NEWT_SECRET"] != ""
+	s.Endpoint, s.SiteID, s.SecretSet = kv["PANGOLIN_ENDPOINT"], storedSiteID(kv), siteSecret(kv) != ""
 	a, _ := run(ctx, "systemctl", "is-active", unit)
 	s.Active = strings.TrimSpace(string(a))
 	_, err = os.Stat(filepath.Join(unitDir, "pangolin-site-watchdog.timer"))
 	s.Boot = err == nil
 	l, _ := run(ctx, "journalctl", "-u", unit, "-n", "30", "--no-pager", "-o", "short-iso")
-	s.Log = mask(string(l), kv["NEWT_SECRET"])
+	s.Log = mask(mask(string(l), kv["NEWT_SECRET"]), kv["SITE_SECRET"])
 	httpx.WriteJSON(w, http.StatusOK, s)
 }
 
@@ -169,7 +185,7 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// An empty secret keeps the stored one: the tile never has it to send back.
 	if in.Secret == "" {
-		in.Secret = kv["NEWT_SECRET"]
+		in.Secret = siteSecret(kv)
 		if in.Secret == "" {
 			httpx.WriteError(w, http.StatusBadRequest, "bad_secret", "secret: required for a new site")
 			return
