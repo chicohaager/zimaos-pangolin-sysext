@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <title>Pangolin</title>
+  <link rel="icon" type="image/svg+xml" href="./appicon.svg">
+  <script>
+    try { var t = localStorage.getItem('pangolin.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="./styles.css?v=@VERSION@">
+  <style>
+    .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 13px; }
+    .kv dt { color: var(--text-muted); }
+    .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .head h3 { font-size: 17px; }
+    .head .app-actions { margin-left: auto; margin-top: 0; }
+    .form { display: grid; gap: 10px; max-width: 560px; }
+    .form label { display: grid; gap: 4px; font-size: 13px; }
+    pre.log { background: var(--neutral-tint); padding: 12px; border-radius: 10px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <h1><img src="./appicon.svg" alt="">Pangolin</h1>
+      <span class="version">v@VERSION@</span>
+      <div class="header-tools">
+        <select id="theme-select" aria-label="Theme">
+          <option value="auto">Theme: auto</option>
+          <option value="light">Theme: light</option>
+          <option value="dark">Theme: dark</option>
+        </select>
+        <button id="refresh-btn" class="btn-secondary">Refresh</button>
+      </div>
+    </div>
+    <p class="subtitle">This host as a <b>Pangolin site</b>, without a container: the site tunnel of the Pangolin CLI connects it to your Pangolin server, so the resources you define there reach the apps here. <b>On</b> also starts it at every boot. In the terminal: <span class="mono">pangolin login</span>, <span class="mono">pangolin ssh</span>, <span class="mono">pangolin list</span>.</p>
+    <div id="status" role="status" aria-live="polite"></div>
+  </header>
+
+  <main>
+    <div id="main"><div class="loading">Loading&hellip;</div></div>
+  </main>
+
+  <script src="./common.js?v=@VERSION@"></script>
+  <script src="./app.js?v=@VERSION@"></script>
+</body>
+</html>

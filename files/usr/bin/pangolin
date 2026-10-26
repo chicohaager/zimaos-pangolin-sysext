@@ -1,0 +1,24 @@
+#!/bin/sh
+# The Pangolin CLI (fosrl/cli) on ZimaOS, from the pangolin module. Everything goes to the
+# upstream binary except the commands that would write to the read-only /usr or set up a
+# service that ZimaOS does not start at boot:
+#   pangolin update                    the module brings new versions (Module Manager)
+#   pangolin service install|uninstall the site service is set up by the Pangolin tile or
+#                                      `sudo pangolin-zima enable` (with a boot watchdog)
+BIN="${PANGOLIN_BIN:-/usr/libexec/pangolin/pangolin}"   # PANGOLIN_BIN: tools/wrapper-test.sh
+case "${1:-}" in
+update)
+  echo "pangolin update: the CLI is part of the pangolin system extension (read-only /usr); update the module in the Module Manager instead" >&2
+  exit 1
+  ;;
+service)
+  case "${2:-}" in
+  install|uninstall)
+    echo "pangolin service $2: on ZimaOS the site service is set up by the Pangolin tile or 'sudo pangolin-zima enable|disable'" >&2
+    echo "(a unit written by the CLI would not start at boot: units are planned before the system extensions are merged)" >&2
+    exit 1
+    ;;
+  esac
+  ;;
+esac
+exec "$BIN" "$@"

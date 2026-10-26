@@ -1,0 +1,20 @@
+[Unit]
+Description=Pangolin tile for ZimaOS (site tunnel on and off, credentials, log)
+Documentation=https://github.com/chicohaager/zimaos-pangolin-sysext
+After=network-online.target zimaos-gateway.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pangolin-web
+Restart=always
+RestartSec=5
+# Root in the host's namespaces: it writes /DATA/AppData/pangolin/site.env and runs
+# pangolin-zima and systemctl. No Protect*/Private* directives — they would give the service a
+# private mount namespace (measured for modmanager on 1.8.0).
+RestrictRealtime=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

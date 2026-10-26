@@ -1,0 +1,27 @@
+# The site tunnel of the Pangolin CLI ('pangolin up site', the Newt code inside the CLI), as
+# `pangolin service install site` writes it, adapted for ZimaOS: credentials in
+# /DATA/AppData/pangolin/site.env (persistent, mounted late, hence RequiresMountsFor), no
+# [Install] - a sysext unit is not started at boot, the watchdog timer written by
+# `pangolin-zima enable` starts it. Same name as upstream's unit, so `pangolin service status
+# site` and `pangolin service logs site` work.
+[Unit]
+Description=Pangolin site tunnel (/DATA/AppData/pangolin/site.env)
+Wants=network-online.target
+After=network-online.target
+RequiresMountsFor=/DATA/AppData/pangolin
+StartLimitIntervalSec=0
+Documentation=https://github.com/fosrl/cli
+
+[Service]
+Type=simple
+EnvironmentFile=/DATA/AppData/pangolin/site.env
+# 'up site' replaces its own binary every 6 h when the server offers a newer CLI
+# (newt updates/selfupdate.go). /usr is read-only here and the module brings updates;
+# NEWT_SYSTEM_SUBSTRATE=CONTAINER is the switch newt 1.19.0 reads to skip that.
+Environment=NEWT_SYSTEM_SUBSTRATE=CONTAINER
+# The CLI keeps its state under $HOME/.config/pangolin: on /DATA, not in root's home.
+Environment=HOME=/DATA/AppData/pangolin
+ExecStart=/usr/libexec/pangolin/pangolin up site
+Restart=always
+RestartSec=5
+UMask=0077
