@@ -18,7 +18,7 @@ Enter the **endpoint**, **site ID** and **secret** of a site (Pangolin dashboard
 
 ## Install (on the ZimaOS host)
 
-With the [Module Manager](https://github.com/chicohaager/modmanager) (once this module is in its catalog): tab **Catalog**, **Pangolin**, **Install**. By hand:
+With the [Module Manager](https://github.com/chicohaager/modmanager) (0.3.0 or later): tab **Catalog**, **Pangolin**, **Install**. By hand:
 
 ```sh
 cd /tmp
