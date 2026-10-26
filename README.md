@@ -52,4 +52,4 @@ sudo sh tools/host-test.sh     # on the host after installing; reads only
 
 ## License
 
-MIT for this repository. The Pangolin CLI is AGPL-3 (Fossorial, Inc.; `/usr/share/doc/pangolin/LICENSE.pangolin-cli`); its source for the bundled version: <https://github.com/fosrl/cli/tree/0.19.0> (`/usr/share/doc/pangolin/packages.txt`).
+MIT for this repository. The tile icon is the Pangolin logo (`public/logo/pangolin_orange.svg` of [fosrl/pangolin](https://github.com/fosrl/pangolin), commit 04bf1e1, AGPL-3 by its license notice: no license header) on the tile background. The Pangolin CLI is AGPL-3 (Fossorial, Inc.; `/usr/share/doc/pangolin/LICENSE.pangolin-cli`); its source for the bundled version: <https://github.com/fosrl/cli/tree/0.19.0> (`/usr/share/doc/pangolin/packages.txt`).
