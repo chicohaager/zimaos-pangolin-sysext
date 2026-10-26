@@ -7,7 +7,9 @@
 [Unit]
 Description=Pangolin site tunnel (/DATA/AppData/pangolin/site.env)
 Wants=network-online.target
-After=network-online.target
+# the folder check runs first and stops the start when it fails (pangolin-site-guard.service)
+Requires=pangolin-site-guard.service
+After=network-online.target pangolin-site-guard.service
 RequiresMountsFor=/DATA/AppData/pangolin
 StartLimitIntervalSec=0
 Documentation=https://github.com/fosrl/cli
