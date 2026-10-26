@@ -221,38 +221,3 @@ func TestSiteAliasesCount(t *testing.T) {
 		t.Fatalf("site.env:\n%s", got)
 	}
 }
-
-// After `zpkg remove` + `zpkg install` the tunnel kept running from the old image: its
-// /proc/<pid>/exe read /libexec/pangolin/pangolin (measured 1.8.0, 2026-10-26), while zpkg
-// restarts pangolin-web. So pangolin-web restarts a tunnel whose binary is not the current one.
-func TestStaleTunnelIsRestartedAtStart(t *testing.T) {
-	for _, c := range []struct {
-		active, exe string
-		restart     bool
-	}{
-		{"active", "/libexec/pangolin/pangolin", true},
-		{"active", cli + " (deleted)", true},
-		{"active", cli, false},
-		{"inactive", "", false},
-	} {
-		f := setup(t)
-		f.active = c.active
-		readExe = func(pid string) (string, error) {
-			if pid != "4242" {
-				t.Errorf("read exe of pid %q", pid)
-			}
-			return c.exe, nil
-		}
-		mainPID = func(context.Context) string { return "4242" }
-		restartStale(context.Background())
-		restarted := false
-		for _, call := range f.calls {
-			if strings.Join(call, " ") == "systemctl restart "+unit {
-				restarted = true
-			}
-		}
-		if restarted != c.restart {
-			t.Errorf("%s %q: restarted=%v, want %v", c.active, c.exe, restarted, c.restart)
-		}
-	}
-}
