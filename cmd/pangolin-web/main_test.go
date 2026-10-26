@@ -186,6 +186,22 @@ func TestForgetTurnsOffFirstThenRemovesTheCredentials(t *testing.T) {
 	}
 }
 
+// 'pangolin up site' saves the credentials it ran with to $HOME/.config/pangolin/site.json
+// (measured on ZimaOS 1.8.0, 2026-10-26: "Saving config to: …/site.json"): forget removes that copy too.
+func TestForgetRemovesTheCopyTheTunnelSaved(t *testing.T) {
+	setup(t)
+	saved := filepath.Join(confDir, ".config", "pangolin", "site.json")
+	_ = os.MkdirAll(filepath.Dir(saved), 0o700)
+	_ = os.WriteFile(envPath(), []byte("NEWT_SECRET="+secret+"\n"), 0o600)
+	_ = os.WriteFile(saved, []byte(`{"secret":"`+secret+`"}`), 0o600)
+	if w, _ := call(t, "POST", "/pangolin/action", map[string]string{"action": "forget"}); w.Code != 200 {
+		t.Fatalf("forget: %d %s", w.Code, w.Body)
+	}
+	if _, err := os.Stat(saved); !os.IsNotExist(err) {
+		t.Fatal("site.json with the credentials still there")
+	}
+}
+
 // The Pangolin dashboard offers SITE_ID/SITE_SECRET (pangolin-cli), newt reads them as aliases
 // of NEWT_ID/NEWT_SECRET (newtconfig.go 1.19.0): a site.env written that way counts too.
 func TestSiteAliasesCount(t *testing.T) {

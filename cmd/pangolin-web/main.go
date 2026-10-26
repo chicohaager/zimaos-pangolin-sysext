@@ -289,9 +289,13 @@ func actionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Action == "forget" {
-		if err := os.Remove(envPath()); err != nil && !os.IsNotExist(err) {
-			httpx.WriteError(w, http.StatusInternalServerError, "failed", fmt.Sprintf("tunnel off, but site.env stays: %v", err))
-			return
+		// site.env and the copy 'pangolin up site' saves under HOME=confDir
+		// ("Saving config to: …/.config/pangolin/site.json", measured 1.8.0).
+		for _, p := range []string{envPath(), filepath.Join(confDir, ".config", "pangolin", "site.json")} {
+			if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+				httpx.WriteError(w, http.StatusInternalServerError, "failed", fmt.Sprintf("tunnel off, but %s stays: %v", p, err))
+				return
+			}
 		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
