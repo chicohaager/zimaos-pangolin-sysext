@@ -1,6 +1,6 @@
 # Pangolin for ZimaOS
 
-**Version 1.0.1** · ZimaOS 1.8.0 (amd64) · sysext module `pangolin`
+**Version 1.0.2** · ZimaOS 1.8.0 (amd64) · sysext module `pangolin`
 
 The [Pangolin CLI](https://github.com/fosrl/cli) as a native ZimaOS module — no container:
 
@@ -29,7 +29,7 @@ mv pangolin-amd64.raw pangolin.raw      # zpkg takes the module name from the fi
 sudo zpkg install /tmp/pangolin.raw
 ```
 
-**Folder check** (since 1.0.1): `/DATA/AppData` is writable by everyone on ZimaOS 1.8 (mode 0777 without the sticky bit; the share of `/DATA` is writable over SMB), so another user could replace `/DATA/AppData/pangolin` with a folder of their own — a `site.env` the tunnel then reads as root, or a folder the tile writes the secret into. Before the tunnel starts (`pangolin-site-guard.service`) and before the tile reads `site.env`, the module sets the sticky bit on `/DATA/AppData` (then only a folder's owner can rename it) and refuses a `pangolin` folder that is a symlink, not root's, or writable by others (lintux-modkit `appdata`).
+**Folder check** (since 1.0.1): `/DATA/AppData` is writable by everyone on ZimaOS 1.8 (mode 0777 without the sticky bit; the share of `/DATA` is writable over SMB), so another user could replace `/DATA/AppData/pangolin` with a folder of their own — a `site.env` the tunnel then reads as root, or a folder the tile writes the secret into. Before the tunnel starts (`pangolin-site-guard.service`) and before the tile reads `site.env`, the module sets the sticky bit on `/DATA/AppData` (then only a folder's owner can rename it) and refuses a `pangolin` folder that is a symlink, not root's, or writable by others (lintux-modkit `appdata`). Since 1.0.2, a `/DATA` that another user owns (uid 999 on one ZimaOS 1.8 box — that user could rename `/DATA/AppData`) is given back to root, with the way back in the log.
 
 ## Command line
 
@@ -51,6 +51,8 @@ tools/check-reproducible.sh     # before a release: builds three times (umask 02
 ../lintux-modkit/tools/check-release.sh . v<version> pangolin# after the release: rebuilds the tag, same bytes as the asset
 sudo sh tools/host-test.sh     # on the host after installing; reads only
 ```
+
+`build.sh` builds only against the lintux-modkit commit in `lintux-modkit.ref`, without local changes — both for the scripts (`../lintux-modkit` or `LINTUX_MODKIT=`) and for the directory Go compiles (go.mod's `replace` or a `go.work`; `LINTUX_MODKIT` does not move it): `scripts/modkit-check.sh` asks `go list` which one that is. `MODKIT_DEV=1` builds anyway, with a warning, not for a release. `bash tools/test-modkit-check.sh` tests the check.
 
 `tools/check-license.sh` stops the build when the CLI or one of its fosrl modules (newt, olm) contains a file under the Fossorial Commercial License: fosrl/cli is mixed-licensed, only files without a license header are AGPL-3.
 
